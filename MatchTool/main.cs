@@ -1,7 +1,6 @@
 ﻿using System;
 using Classes;
 using LoadSystem;
-using MatchSystem;
 
 Loader loader = new Loader();
 
@@ -43,7 +42,7 @@ while (true)
                     Game selectedGame = games[gameNames.IndexOf(arguments[0])] as Game;
                     foreach (Player player in selectedGame.players)
                     {
-                        Console.WriteLine($"{player.username}\nCurrent Elo: {player.elo}\nPlacements Left: {(player.placementGamesLeft <= 0 ? "0" : player.placementGamesLeft)}\n");
+                        Console.WriteLine($"{player.username}\nCurrent Elo: {player.elo}\n");
                     }
                     break;
                 }
@@ -79,7 +78,7 @@ while (true)
                 counter = 0;
 
                 List<string> playerNames = new List<string>();
-                foreach(Player player in selectedGame.players)
+                foreach (Player player in selectedGame.players)
                 {
                     playerNames.Add(player.username);
                 }
@@ -90,7 +89,7 @@ while (true)
                     newName = newNameRaw + counter.ToString();
                 }
 
-                Player newPlayer = new Player(newName, 0, 0, 5);
+                Player newPlayer = new Player(newName, 0, 0);
                 selectedGame.players.Add(newPlayer);
                 Console.WriteLine($"Player '{newName}' was added succesfully to '{selectedGame.name}'");
             }
@@ -134,16 +133,49 @@ while (true)
             }
            
             break;
-        case "matchmake":
-            if (arguments.Length > 0)
+        case "match":
+            if (arguments.Length > 2)
             {
+                if (gameNames.Contains(arguments[0]))
+                {
+                    Game selectedGame = games[gameNames.IndexOf(arguments[0])] as Game;
 
+                    List<string> playerNames = new List<string>();
+                    foreach (Player player in selectedGame.players)
+                    {
+                        playerNames.Add(player.username);
+                    }
+
+                    if (playerNames.Contains(arguments[1]) && playerNames.Contains(arguments[2]))
+                    {
+                        Player player1 = selectedGame.players[playerNames.IndexOf(arguments[1])] as Player;
+                        Player player2 = selectedGame.players[playerNames.IndexOf(arguments[2])] as Player;
+
+                        Match match = new Match(player1, player2);
+                        Console.WriteLine($@"{match.player1.username} ({match.player1.elo}) vs. {match.player2.username} ({match.player2.elo})
+Match Fairness Rating: {match.matchFairness}
+Player 1 ({match.player1.username}) Win: +{match.player1Win}
+Player 1 ({match.player1.username}) Lose: {match.player1Lose}
+Player 2 ({match.player2.username}) Win: +{match.player2Win}
+Player 2 ({match.player2.username}) Lose: {match.player2Lose}
+
+Type 1 if Player 1 wins, and 2 if Player 2 wins.
+");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Error: One or more players don't exist.");
+                    }
+
+
+                } else
+                {
+                    Console.WriteLine("Error! That game doesn't exist.");
+                }
             } else
             {
                 Console.WriteLine("Error: Not enough arguments! Use 'help' to see usage.");
             }
-            break;
-        case "match":
             break;
         case "help":
             Console.WriteLine(@"clear: Clears the console.
@@ -154,7 +186,6 @@ create <optional: name>: Creates a new game with specified name. If no name is s
 add <game> <optional: name>: Creates a new player with specified name in the specified game. If no name is specified, the name will default to 'Player.'
 remove game <game>: Removes specified game.
 remove player <game> <player>: Removes specified player in specified game
-matchmake <game>: Recommends best matches for specified game.
 match <game> <player1> <player2>: Begins a match between specified players.
 ");
             break;
